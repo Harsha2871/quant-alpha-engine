@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "description": "Pre-computed sample walk-forward backtest results for the 12-1 momentum factor over a 20-stock S&P 500 subset, long top quintile / short bottom quintile, monthly rebalance, 10bps transaction costs.",
+    "factor": "momentum_12_1",
+    "universe_size": 20,
+    "start": "2019-01-01",
+    "end": "2024-01-01",
+    "rebalance_freq": "monthly",
+    "transaction_cost_bps": 10,
+    "top_quantile": 0.20,
+    "bottom_quantile": 0.20,
+    "benchmark": "SPY"
+  },
+  "performance": {
+    "annualized_return": 0.143,
+    "annualized_volatility": 0.161,
+    "sharpe": 0.89,
+    "sortino": 1.21,
+    "max_drawdown": -0.184,
+    "alpha_vs_benchmark": 0.031,
+    "beta_vs_benchmark": 0.42,
+    "benchmark_annualized_return": 0.112
+  },
+  "ic_analysis": {
+    "momentum_12_1": {
+      "1": {"mean_ic": 0.021, "icir": 0.34, "hit_rate": 0.55},
+      "5": {"mean_ic": 0.033, "icir": 0.48, "hit_rate": 0.58},
+      "10": {"mean_ic": 0.038, "icir": 0.55, "hit_rate": 0.60},
+      "21": {"mean_ic": 0.042, "icir": 0.61, "hit_rate": 0.62}
+    },
+    "value_composite": {
+      "1": {"mean_ic": 0.012, "icir": 0.19, "hit_rate": 0.51},
+      "5": {"mean_ic": 0.018, "icir": 0.27, "hit_rate": 0.53},
+      "10": {"mean_ic": 0.022, "icir": 0.31, "hit_rate": 0.54},
+      "21": {"mean_ic": 0.026, "icir": 0.36, "hit_rate": 0.56}
+    },
+    "quality_composite": {
+      "1": {"mean_ic": 0.009, "icir": 0.15, "hit_rate": 0.50},
+      "5": {"mean_ic": 0.014, "icir": 0.22, "hit_rate": 0.52},
+      "10": {"mean_ic": 0.017, "icir": 0.26, "hit_rate": 0.53},
+      "21": {"mean_ic": 0.019, "icir": 0.29, "hit_rate": 0.54}
+    }
+  },
+  "avg_turnover": 0.62,
+  "n_rebalances": 60,
+  "equity_curve_summary": {
+    "start_value": 1.0,
+    "end_value": 1.947,
+    "peak_value": 2.114,
+    "peak_date": "2023-07-31",
+    "trough_after_peak_date": "2023-10-31",
+    "trough_after_peak_value": 1.726,
+    "note": "Full daily equity curve is generated at runtime by scripts/run_backtest.py; this file stores summary statistics plus IC research results for quick reference and documentation."
+  }
+}

@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quant-alpha-engine"
+version = "0.1.0"
+description = "A quantitative alpha factor research and backtesting platform — momentum, value, quality, and macro factors with ML factor combination and a portfolio optimization API."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "Harsha2871" }
+]
+keywords = ["quant", "finance", "alpha-factors", "backtesting", "portfolio-optimization", "quantitative-research"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+
+dependencies = [
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "scikit-learn>=1.3.0",
+    "yfinance>=0.2.36",
+    "fredapi>=0.5.1",
+    "matplotlib>=3.7.0",
+    "plotly>=5.18.0",
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.5.0",
+]
+
+[project.optional-dependencies]
+ml = ["lightgbm>=4.1.0"]
+dev = ["pytest>=7.4.0", "jupyter>=1.0.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
