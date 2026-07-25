@@ -35,6 +35,38 @@ Demo mode enables deterministic synthetic prices and labels the generated JSON o
 
 ## Usage
 
+### Yahoo Finance Data
+
+Market data is pulled through the `yfinance` Python package, which is included in `requirements.txt`. There is no Yahoo Finance API key in this project.
+
+Install dependencies first:
+
+```bash
+make install
+```
+
+Smoke-test a real Yahoo Finance fetch before running a full backtest:
+
+```bash
+PYTHONPATH=src python - <<'PY'
+from alpha_engine.data.price_loader import PriceLoader
+
+loader = PriceLoader(use_cache=False, allow_synthetic=False)
+prices = loader.get_close_prices(["AAPL"], start="2024-01-02", end="2024-01-10")
+
+print(prices.tail())
+print(prices.attrs)
+PY
+```
+
+Expected signal for a real-data run:
+
+```text
+{'data_source': 'yfinance', 'synthetic': False}
+```
+
+If this fails with `yfinance is not installed`, run `make install` or `pip install -r requirements.txt`. If Yahoo Finance is unreachable or rate-limited, the real-data commands will fail by default. Use `--allow-synthetic` only for offline pipeline checks.
+
 Run the default research workflow with real yfinance data:
 
 ```bash
@@ -75,6 +107,16 @@ Inspect the generated output:
 ```bash
 python -m json.tool results/latest_backtest_results.json | head -80
 python -m json.tool results/latest_research_results.json | head -80
+```
+
+For real Yahoo Finance runs, the generated JSON should include:
+
+```json
+"data_source": {
+  "prices": "yfinance",
+  "synthetic": false,
+  "synthetic_reason": null
+}
 ```
 
 Start the local API:
