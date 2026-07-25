@@ -154,27 +154,27 @@ Endpoints:
 
 ## Using Coding Assistants
 
-These prompts are useful when asking an agent to inspect or extend the project. They keep the work grounded in reproducible commands and caveats instead of asking the agent to make unsupported performance claims.
+You can use Codex, Claude Code, OpenCode, or another coding assistant to inspect or extend this project. The prompts below are written to keep the work grounded in reproducible commands and caveats instead of asking the agent to make unsupported performance claims.
 
-Codex:
+Project review:
 
 ```text
 You are in the quant-alpha-engine repo. First read README.md, docs/reproducibility.md, and docs/known_limitations.md. Run the test suite, then run the demo backtest with --allow-synthetic only if real yfinance data is unavailable. Summarize what the project does, what evidence the outputs support, and what claims should not be made.
 ```
 
-Claude Code:
+Senior engineering review:
 
 ```text
 Review this quant research project like a senior engineer. Check the data-source handling, the walk-forward backtest, the ML chronological split, and the README claims. Run pytest. If dependencies or market data are unavailable, say exactly what blocked verification and use the explicit demo mode only for pipeline smoke tests.
 ```
 
-OpenCode:
+Resume-readiness review:
 
 ```text
 Inspect this repo and produce a short engineering review. Use rg to find fallback paths, synthetic-data handling, and random/time-split logic. Run the available tests. Recommend one small improvement that would make the project more defensible on a resume.
 ```
 
-Example extension prompt:
+Feature extension:
 
 ```text
 Add a new price-only factor called volatility_3m that ranks stocks by trailing 63-day realized volatility. Write the test first, register the factor, update the factor table, and run the relevant tests. Do not change the backtest assumptions or make new performance claims.
