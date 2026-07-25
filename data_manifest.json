@@ -1,0 +1,45 @@
+{
+  "project": "quant-alpha-engine",
+  "default_universe": [
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "NVDA",
+    "META",
+    "TSLA",
+    "JPM",
+    "V",
+    "UNH",
+    "HD",
+    "PG",
+    "MA",
+    "XOM",
+    "AVGO",
+    "COST",
+    "MRK",
+    "ABBV",
+    "PEP",
+    "KO"
+  ],
+  "benchmark": "SPY",
+  "price_source": "yfinance adjusted close for empirical runs",
+  "synthetic_price_mode": "opt-in via --allow-synthetic for demos/tests only",
+  "sample_period": {
+    "start": "2019-01-01",
+    "end": "2024-01-01"
+  },
+  "default_backtest": {
+    "factor": "momentum_12_1",
+    "rebalance_frequency": "monthly",
+    "top_quantile": 0.2,
+    "bottom_quantile": 0.2,
+    "transaction_cost_bps": 10
+  },
+  "caveats": [
+    "Small hand-picked universe; survivorship bias is not addressed.",
+    "yfinance is not a point-in-time institutional data source.",
+    "Current fundamentals are not historical point-in-time fundamentals.",
+    "Sample results are research artifacts, not trading recommendations."
+  ]
+}

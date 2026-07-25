@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "quant-alpha-engine"
 version = "0.1.0"
-description = "A quantitative alpha factor research and backtesting platform — momentum, value, quality, and macro factors with ML factor combination and a portfolio optimization API."
+description = "A quantitative factor research and backtesting toolkit with IC analysis, transaction-cost modeling, and a FastAPI research API."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
     { name = "Harsha2871" }
 ]
-keywords = ["quant", "finance", "alpha-factors", "backtesting", "portfolio-optimization", "quantitative-research"]
+keywords = ["quant", "finance", "alpha-factors", "backtesting", "factor-research", "quantitative-research"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Financial and Insurance Industry",
