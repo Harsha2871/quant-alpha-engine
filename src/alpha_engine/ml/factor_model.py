@@ -202,10 +202,11 @@ def walk_forward_train_test(
     if train_panel.empty:
         raise ValueError("Training partition is empty — check date range vs train_years")
     if test_panel.empty:
-        logger.warning("Test partition empty — falling back to a random 80/20 split")
-        shuffled = panel.sample(frac=1.0, random_state=42)
-        split_idx = int(len(shuffled) * 0.8)
-        train_panel, test_panel = shuffled.iloc[:split_idx], shuffled.iloc[split_idx:]
+        raise ValueError(
+            "chronological test partition is empty — reduce train_years/test_years "
+            "or provide a longer date range. Refusing to use a random split because "
+            "that would leak time information in a walk-forward evaluation."
+        )
 
     X_train, y_train = train_panel[feature_cols].fillna(0.0), train_panel["target_quintile"]
     X_test, y_test = test_panel[feature_cols].fillna(0.0), test_panel["target_quintile"]
