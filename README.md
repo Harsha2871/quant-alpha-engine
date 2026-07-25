@@ -13,21 +13,6 @@ This is a learning/research project, not an investment system. The sample output
 - Exposes factor scoring and backtest endpoints through FastAPI.
 - Keeps synthetic price data opt-in so mock runs are not confused with empirical results.
 
-## Architecture
-
-```text
-data loaders -> factor registry -> research/backtest modules -> scripts/API
-```
-
-Important modules:
-
-- `src/alpha_engine/data/price_loader.py`: yfinance-backed OHLCV loader with explicit synthetic demo mode.
-- `src/alpha_engine/factors/`: factor implementations and registry.
-- `src/alpha_engine/research/`: IC, decay, and correlation analysis.
-- `src/alpha_engine/backtest/`: quantile portfolio construction, walk-forward backtest, performance metrics.
-- `src/alpha_engine/ml/factor_model.py`: chronological factor-combination experiment using RandomForest or LightGBM.
-- `src/alpha_engine/api/main.py`: FastAPI endpoints for factors, backtests, and factor stats.
-
 ## Quickstart
 
 ```bash
@@ -47,6 +32,72 @@ make backtest-demo
 ```
 
 Demo mode enables deterministic synthetic prices and labels the generated JSON output with `data_source.synthetic: true`.
+
+## Usage
+
+Run the default research workflow with real yfinance data:
+
+```bash
+make research
+make backtest
+make plot
+```
+
+Run the same workflow offline with deterministic demo data:
+
+```bash
+make research-demo
+make backtest-demo
+make plot
+```
+
+Run a smaller custom universe:
+
+```bash
+python scripts/run_factor_research.py \
+  --tickers AAPL MSFT NVDA JPM XOM \
+  --start 2020-01-01 \
+  --end 2024-01-01 \
+  --horizons 1 5 21 \
+  --output results/custom_research_results.json
+
+python scripts/run_backtest.py \
+  --tickers AAPL MSFT NVDA JPM XOM \
+  --factor momentum_12_1 \
+  --start 2020-01-01 \
+  --end 2024-01-01 \
+  --cost-bps 10 \
+  --output results/custom_backtest_results.json
+```
+
+Inspect the generated output:
+
+```bash
+python -m json.tool results/latest_backtest_results.json | head -80
+python -m json.tool results/latest_research_results.json | head -80
+```
+
+Start the local API:
+
+```bash
+make api
+```
+
+Then call it:
+
+```bash
+curl http://localhost:8000/health
+
+curl -X POST http://localhost:8000/backtest \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tickers": ["AAPL", "MSFT", "NVDA", "JPM", "XOM"],
+    "factor": "momentum_12_1",
+    "start": "2020-01-01",
+    "end": "2024-01-01",
+    "transaction_cost_bps": 10
+  }'
+```
 
 ## Reproducing The Sample Run
 
@@ -101,6 +152,34 @@ Endpoints:
 | `POST` | `/backtest` | Walk-forward long/short factor backtest. |
 | `GET` | `/factor-stats` | IC table and simple cross-factor correlation snapshot. |
 
+## Using Coding Assistants
+
+These prompts are useful when asking an agent to inspect or extend the project. They keep the work grounded in reproducible commands and caveats instead of asking the agent to make unsupported performance claims.
+
+Codex:
+
+```text
+You are in the quant-alpha-engine repo. First read README.md, docs/reproducibility.md, and docs/known_limitations.md. Run the test suite, then run the demo backtest with --allow-synthetic only if real yfinance data is unavailable. Summarize what the project does, what evidence the outputs support, and what claims should not be made.
+```
+
+Claude Code:
+
+```text
+Review this quant research project like a senior engineer. Check the data-source handling, the walk-forward backtest, the ML chronological split, and the README claims. Run pytest. If dependencies or market data are unavailable, say exactly what blocked verification and use the explicit demo mode only for pipeline smoke tests.
+```
+
+OpenCode:
+
+```text
+Inspect this repo and produce a short engineering review. Use rg to find fallback paths, synthetic-data handling, and random/time-split logic. Run the available tests. Recommend one small improvement that would make the project more defensible on a resume.
+```
+
+Example extension prompt:
+
+```text
+Add a new price-only factor called volatility_3m that ranks stocks by trailing 63-day realized volatility. Write the test first, register the factor, update the factor table, and run the relevant tests. Do not change the backtest assumptions or make new performance claims.
+```
+
 ## Testing
 
 ```bash
@@ -118,6 +197,16 @@ The tests cover factor math, IC analysis, portfolio construction, backtest accou
 - The ML factor-combination module is an experiment. It now refuses random fallback splits because random time splits would undermine walk-forward evaluation.
 
 See `docs/known_limitations.md` for more detail.
+
+## Developer Notes
+
+The implementation follows a simple pipeline:
+
+```text
+data loaders -> factor registry -> research/backtest modules -> scripts/API
+```
+
+The most useful entry points are the scripts in `scripts/`, the FastAPI app, and the tests. The source tree is organized by responsibility: data loading, factor definitions, research metrics, backtesting, ML experiments, and API handlers.
 
 ## Resume Framing
 
