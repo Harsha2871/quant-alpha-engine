@@ -32,6 +32,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--top-q", type=float, default=0.20)
     parser.add_argument("--bottom-q", type=float, default=0.20)
     parser.add_argument("--cost-bps", type=float, default=10.0)
+    parser.add_argument(
+        "--allow-synthetic",
+        action="store_true",
+        help="Permit deterministic synthetic prices if yfinance is unavailable. Use for demos/tests only.",
+    )
     parser.add_argument("--output", default=str(RESULTS_DIR / "latest_backtest_results.json"))
     return parser.parse_args()
 
@@ -48,9 +53,12 @@ def main() -> None:
         )
 
     print(f"Loading prices for {len(tickers)} tickers + benchmark {BENCHMARK_TICKER}...")
-    loader = PriceLoader()
+    loader = PriceLoader(allow_synthetic=args.allow_synthetic)
     prices = loader.get_close_prices(tickers, start=args.start, end=args.end)
     benchmark_prices = loader.get_close_prices([BENCHMARK_TICKER], start=args.start, end=args.end)[BENCHMARK_TICKER]
+    data_source = prices.attrs.get("data_source", "unknown")
+    if prices.attrs.get("synthetic"):
+        print("WARNING: running backtest on synthetic price data; do not treat metrics as empirical.")
 
     print(f"Computing factor '{args.factor}'...")
     factor_panel = DEFAULT_REGISTRY.compute(args.factor, prices=prices)
@@ -76,7 +84,13 @@ def main() -> None:
 
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(result.to_summary_dict(), indent=2, default=str))
+    payload = result.to_summary_dict()
+    payload["data_source"] = {
+        "prices": data_source,
+        "synthetic": bool(prices.attrs.get("synthetic", False)),
+        "synthetic_reason": prices.attrs.get("synthetic_reason"),
+    }
+    output_path.write_text(json.dumps(payload, indent=2, default=str))
     print(f"\nSaved results to {output_path}")
 
 

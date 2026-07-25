@@ -34,6 +34,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--start", default="2019-01-01")
     parser.add_argument("--end", default="2024-01-01")
     parser.add_argument("--horizons", nargs="+", type=int, default=[1, 5, 10, 21])
+    parser.add_argument(
+        "--allow-synthetic",
+        action="store_true",
+        help="Permit deterministic synthetic prices if yfinance is unavailable. Use for demos/tests only.",
+    )
     parser.add_argument("--output", default=None, help="Optional path to write JSON results")
     return parser.parse_args()
 
@@ -45,8 +50,10 @@ def main() -> None:
         print(f"No --tickers given; defaulting to built-in universe: {tickers}")
 
     print(f"Loading prices for {len(tickers)} tickers from {args.start} to {args.end}...")
-    loader = PriceLoader()
+    loader = PriceLoader(allow_synthetic=args.allow_synthetic)
     prices = loader.get_close_prices(tickers, start=args.start, end=args.end)
+    if prices.attrs.get("synthetic"):
+        print("WARNING: running factor research on synthetic price data; do not treat IC as empirical.")
     print(f"Loaded price matrix: {prices.shape[0]} dates x {prices.shape[1]} tickers")
 
     price_only_factors = [
@@ -75,7 +82,15 @@ def main() -> None:
 
     if args.output:
         out_path = Path(args.output)
-        out_path.write_text(json.dumps(all_results, indent=2, default=str))
+        payload = {
+            "data_source": {
+                "prices": prices.attrs.get("data_source", "unknown"),
+                "synthetic": bool(prices.attrs.get("synthetic", False)),
+                "synthetic_reason": prices.attrs.get("synthetic_reason"),
+            },
+            "results": all_results,
+        }
+        out_path.write_text(json.dumps(payload, indent=2, default=str))
         print(f"\nSaved full research results to {out_path}")
 
     print("\nDone.")

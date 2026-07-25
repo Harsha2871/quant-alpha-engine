@@ -10,8 +10,14 @@ install: ## Install project + dependencies in editable mode
 research: ## Run factor research (IC/ICIR/decay) across the default universe
 	$(PYTHON) scripts/run_factor_research.py --universe-default --output results/latest_research_results.json
 
+research-demo: ## Run factor research with deterministic synthetic data allowed
+	$(PYTHON) scripts/run_factor_research.py --universe-default --allow-synthetic --output results/latest_research_results.json
+
 backtest: ## Run the default walk-forward backtest (12-1 momentum factor)
 	$(PYTHON) scripts/run_backtest.py --factor momentum_12_1 --output results/latest_backtest_results.json
+
+backtest-demo: ## Run the default backtest with deterministic synthetic data allowed
+	$(PYTHON) scripts/run_backtest.py --factor momentum_12_1 --allow-synthetic --output results/latest_backtest_results.json
 
 plot: ## Plot equity curve from the latest backtest results
 	$(PYTHON) scripts/plot_performance.py --input results/latest_backtest_results.json

@@ -3,10 +3,9 @@ price_loader.py — OHLCV price data fetcher backed by yfinance, with a
 pickle-based on-disk cache to avoid re-hitting the network on every run.
 
 The cache key is a hash of (tickers, start, end, interval). Cached frames are
-stored as pickles under `config.CACHE_DIR`. If yfinance is unavailable or the
-network call fails, a synthetic-but-deterministic price series is generated
-so that downstream research/backtests can still run offline (useful for CI
-and for reviewers without network access).
+stored as pickles under `config.CACHE_DIR`. Synthetic data is available for
+offline demos and tests, but it must be enabled explicitly so empirical
+research runs do not accidentally report mock-data results.
 """
 from __future__ import annotations
 
@@ -76,10 +75,16 @@ def _synthetic_ohlcv(tickers: list[str], start: str, end: str) -> pd.DataFrame:
 class PriceLoader:
     """Fetches and caches OHLCV data for a universe of tickers."""
 
-    def __init__(self, cache_dir: Optional[Path] = None, use_cache: bool = True):
+    def __init__(
+        self,
+        cache_dir: Optional[Path] = None,
+        use_cache: bool = True,
+        allow_synthetic: bool = False,
+    ):
         self.cache_dir = cache_dir or CACHE_DIR
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.use_cache = use_cache
+        self.allow_synthetic = allow_synthetic
 
     def get_ohlcv(
         self,
@@ -109,10 +114,29 @@ class PriceLoader:
 
         return df
 
+    def _synthetic_or_raise(
+        self,
+        tickers: list[str],
+        start: str,
+        end: str,
+        reason: str,
+    ) -> pd.DataFrame:
+        if not self.allow_synthetic:
+            raise RuntimeError(
+                "Synthetic price data is disabled. Enable allow_synthetic=True only for "
+                f"offline demos/tests. Original failure: {reason}"
+            )
+
+        logger.warning("Using synthetic price data: %s", reason)
+        data = _synthetic_ohlcv(tickers, start, end)
+        data.attrs["data_source"] = "synthetic"
+        data.attrs["synthetic"] = True
+        data.attrs["synthetic_reason"] = reason
+        return data
+
     def _fetch(self, tickers: list[str], start: str, end: str, interval: str) -> pd.DataFrame:
         if not _HAS_YFINANCE:
-            logger.warning("yfinance not installed — using synthetic price fallback")
-            return _synthetic_ohlcv(tickers, start, end)
+            return self._synthetic_or_raise(tickers, start, end, "yfinance is not installed")
 
         try:
             raw = yf.download(
@@ -132,10 +156,11 @@ class PriceLoader:
             if len(tickers) == 1 and not isinstance(raw.columns, pd.MultiIndex):
                 raw = pd.concat({tickers[0]: raw}, axis=1)
 
+            raw.attrs["data_source"] = "yfinance"
+            raw.attrs["synthetic"] = False
             return raw
         except Exception as exc:  # pragma: no cover - network dependent
-            logger.warning("yfinance fetch failed (%s) — using synthetic fallback", exc)
-            return _synthetic_ohlcv(tickers, start, end)
+            return self._synthetic_or_raise(tickers, start, end, f"yfinance fetch failed: {exc}")
 
     def get_close_prices(
         self,
@@ -152,4 +177,6 @@ class PriceLoader:
             sub = ohlcv[ticker]
             field = "Adj Close" if "Adj Close" in sub.columns else "Close"
             closes[ticker] = sub[field]
-        return pd.DataFrame(closes)
+        close_prices = pd.DataFrame(closes)
+        close_prices.attrs.update(ohlcv.attrs)
+        return close_prices
