@@ -207,7 +207,3 @@ data loaders -> factor registry -> research/backtest modules -> scripts/API
 ```
 
 The most useful entry points are the scripts in `scripts/`, the FastAPI app, and the tests. The source tree is organized by responsibility: data loading, factor definitions, research metrics, backtesting, ML experiments, and API handlers.
-
-## License
-
-MIT
