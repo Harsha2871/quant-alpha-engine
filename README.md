@@ -208,12 +208,6 @@ data loaders -> factor registry -> research/backtest modules -> scripts/API
 
 The most useful entry points are the scripts in `scripts/`, the FastAPI app, and the tests. The source tree is organized by responsibility: data loading, factor definitions, research metrics, backtesting, ML experiments, and API handlers.
 
-## Resume Framing
-
-Useful one-line framing:
-
-> Built a Python factor-research engine for cross-sectional equity strategies, including factor registry, IC/ICIR analysis, long/short portfolio construction, transaction-cost modeling, and FastAPI endpoints for experimentation.
-
 ## License
 
 MIT
